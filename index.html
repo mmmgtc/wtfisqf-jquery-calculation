@@ -1,216 +1,281 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Quadratic Funding</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
-    .contributionTag { display: inline-block; background: #ccc; border: 1px solid #888; margin-right: 5px;}
-    .contributionTag button { font-size: 3px; }
+      .contributionTag {
+        display: inline-block;
+        background: #ccc;
+        border: 1px solid #888;
+        margin-right: 5px;
+      }
+      .contributionTag button {
+        font-size: 3px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="calculation"></div>
-</body>
+  </body>
 </html>
 
 <script>
-$(document).ready(function() {
-    // Load parameters from URL if exist
-    const params = new URLSearchParams(window.location.search);
-
+  $(document).ready(function () {
     let quadraticFunding = {
-        matchAmount: params.get('matchAmount') ? parseFloat(params.get('matchAmount')) : 1000,
-        projects: params.get('projects') ? JSON.parse(params.get('projects')) : [],
+      matchAmount: 1000,
+      projects: [],
     };
 
     // Update URL parameters on changes
     function updateUrl() {
-        params.set('matchAmount', quadraticFunding.matchAmount);
-        params.set('projects', JSON.stringify(quadraticFunding.projects));
-        window.history.replaceState({}, '', '?' + params.toString());
+      let params = new URLSearchParams();
+      params.set("match", quadraticFunding.matchAmount);
+
+      quadraticFunding.projects.forEach((project, i) => {
+        params.append("grant", project.contributions.join("-"));
+      });
+
+      // Update the URL only if it differs from the current state
+      if (window.location.search !== "?" + params.toString()) {
+        window.history.replaceState({}, "", "?" + params.toString());
+      }
     }
 
-    let matchAmountInput = $('<input>').attr('id', 'matchAmount').attr('placeholder', 'Match Amount').attr('value', quadraticFunding.matchAmount);
-    let projectInput = $('<input>').attr('id', 'newProject').attr('placeholder', 'Project Name');
-    let addProjectButton = $('<button>').attr('id', 'addProject').text('Add Project');
-    let projectTable = $('<table>').attr('id', 'projectTable');
+    let matchAmountInput = $("<input>")
+      .attr("id", "matchAmount")
+      .attr("placeholder", "Match Amount")
+      .attr("value", quadraticFunding.matchAmount);
+    let addProjectButton = $("<button>")
+      .attr("id", "addProject")
+      .text("Add Project");
+    let projectTable = $("<table>").attr("id", "projectTable");
 
-    $('#calculation').append(
-        $('<div>').append(matchAmountInput),
-        $('<div>').append(projectInput).append(addProjectButton),
-        $('<div>').append(projectTable)
+    $("#calculation").append(
+      $("<div>").append(matchAmountInput),
+      $("<div>").append(projectTable),
+      $("<div>").append(addProjectButton)
     );
 
     // Add listener to Match Amount input field
-    $('#matchAmount').on('keyup', function() {
-        quadraticFunding.matchAmount = $(this).val();
-        calculateMatchAmounts();
-        updateUrl();
+    $("#matchAmount").on("keyup", function () {
+      quadraticFunding.matchAmount = $(this).val();
+      calculateMatchAmounts();
     });
 
-    $('#projectTable').append(
-        $('<tr>').append(
-            $('<th>').text('Remove'),
-            $('<th colspan="2">').text('Project'),
-            $('<th>').text('Contributions'),
-            $('<th>').text('Funded Amount'),
-            $('<th>').text('Match Amount')
-        )
+    $("#projectTable").append(
+      $("<tr>").append(
+        $("<th>").text("Remove"),
+        $('<th colspan="2">').text("Project"),
+        $("<th>").text("Contributions"),
+        $("<th>").text("Funded Amount"),
+        $("<th>").text("Match Amount")
+      )
     );
 
-    $('#addProject').on('click', function() {
-        let projectName = $('#newProject').val();
+    $("#addProject").on("click", function () {
+      let projectName = "Project " + (quadraticFunding.projects.length + 1);
 
-        if (projectName) {
-            quadraticFunding.projects.push({
-                name: projectName,
-                contributions: [],
-                fundedAmount: 0,
-                matchAmount: 0
-            });
-
-            let projectRow = $('<tr>')
-                .attr('data-project-name', projectName)
-                .append(
-                    $('<td>').append(
-                        $('<button>').addClass('removeProject').text('\u2716')
-                    ),
-                    $('<td>').text(projectName),
-                    $('<td>').append(
-                        $('<input>').addClass('contributionInput').attr('placeholder', 'Add a contribution and press Enter')
-                    ),
-                    $('<td>').attr('class', 'contributions'),
-                    $('<td>').attr('class', 'fundedAmount').text(0),
-                    $('<td>').attr('class', 'matchAmount').text(0)
-                );
-
-            $('#projectTable').append(projectRow);
-            $('#newProject').val('');
-            updateUrl(); // Update URL after adding new project
-        }
-    });
-
-    $('#projectTable').on('click', '.removeProject', function() {
-        let projectName = $(this).closest('tr').data('projectName');
-
-        quadraticFunding.projects = quadraticFunding.projects.filter(function(project) {
-            return project.name !== projectName;
+      if (projectName) {
+        quadraticFunding.projects.push({
+          name: projectName,
+          contributions: [],
+          fundedAmount: 0,
+          matchAmount: 0,
         });
 
-        $(this).closest('tr').remove();
+        let projectRow = $("<tr>")
+          .attr("data-project-name", projectName)
+          .append(
+            $("<td>").append(
+              $("<button>").addClass("removeProject").text("\u2716")
+            ),
+            $("<td>").text(projectName),
+            $("<td>").append(
+              $("<input>")
+                .addClass("contributionInput")
+                .attr("placeholder", "Add a contribution and press Enter")
+            ),
+            $("<td>").attr("class", "contributions"),
+            $("<td>").attr("class", "fundedAmount").text(0),
+            $("<td>").attr("class", "matchAmount").text(0)
+          );
+
+        $("#projectTable").append(projectRow);
+      }
+    });
+
+    $("#projectTable").on("click", ".removeProject", function () {
+      let projectName = $(this).closest("tr").data("projectName");
+
+      quadraticFunding.projects = quadraticFunding.projects.filter(function (
+        project
+      ) {
+        return project.name !== projectName;
+      });
+
+      $(this).closest("tr").remove();
+
+      calculateMatchAmounts();
+    });
+
+    $("#projectTable").on("keypress", ".contributionInput", function (e) {
+      if (e.which === 13) {
+        let contribution = parseFloat($(this).val());
+        let projectName = $(this).closest("tr").data("projectName");
+
+        let project = quadraticFunding.projects.find(function (project) {
+          return project.name === projectName;
+        });
+
+        if (project && !isNaN(contribution)) {
+          project.contributions.push(contribution);
+          project.fundedAmount += contribution;
+          calculateMatchAmounts();
+
+          let contributionTag = $("<div>")
+            .addClass("contributionTag")
+            .append($("<span>").text("$" + contribution))
+            .append(
+              $("<button>").addClass("removeContribution").text("\u2716")
+            );
+
+          // Attach contribution index to the tag
+          contributionTag.attr(
+            "data-contribution-index",
+            project.contributions.length - 1
+          );
+
+          $(this).closest("tr").find(".contributions").append(contributionTag);
+          $(this)
+            .closest("tr")
+            .find(".fundedAmount")
+            .text("$" + project.fundedAmount.toFixed(2));
+          $(this).val("");
+        }
+      }
+    });
+
+    $("#projectTable").on("click", ".removeContribution", function (e) {
+      let contributionTag = $(this).parent();
+      let contributionIndex = contributionTag.data("contributionIndex");
+      let projectName = contributionTag.closest("tr").data("projectName");
+
+      let project = quadraticFunding.projects.find(function (project) {
+        return project.name === projectName;
+      });
+
+      if (project && contributionIndex !== undefined) {
+        let contribution = project.contributions[contributionIndex];
+
+        // Use splice to remove the contribution
+        project.contributions.splice(contributionIndex, 1);
+        project.fundedAmount -= contribution;
 
         calculateMatchAmounts();
-        updateUrl(); // Update URL after removing a project
-    });
 
-    $('#projectTable').on('keypress', '.contributionInput', function(e) {
-        if (e.which === 13) {
-            let contribution = parseFloat($(this).val());
-            let projectName = $(this).closest('tr').data('projectName');
+        $(this)
+          .closest("tr")
+          .find(".fundedAmount")
+          .text("$" + project.fundedAmount.toFixed(2));
 
-            let project = quadraticFunding.projects.find(function(project) {
-                return project.name === projectName;
-            });
-
-            if (project && !isNaN(contribution)) {
-                project.contributions.push(contribution);
-                project.fundedAmount += contribution;
-                calculateMatchAmounts();
-
-                let contributionTag = $('<div>').addClass('contributionTag')
-                    .append($('<span>').text("$" + contribution))
-                    .append($('<button>').addClass('removeContribution').text('\u2716'));
-
-                // Attach contribution index to the tag
-                contributionTag.attr('data-contribution-index', project.contributions.length - 1);
-
-                $(this).closest('tr').find('.contributions').append(contributionTag);
-                $(this).closest('tr').find('.fundedAmount').text("$" + project.fundedAmount.toFixed(2));
-                $(this).val('');
-                updateUrl(); // Update URL after adding a contribution
-            }
-        }
-
-
-
-    });
-
-    $('#projectTable').on('click', '.removeContribution', function(e) {
-        let contributionTag = $(this).parent();
-        let contributionIndex = contributionTag.data('contributionIndex');
-        let projectName = contributionTag.closest('tr').data('projectName');
-
-        let project = quadraticFunding.projects.find(function(project) {
-            return project.name === projectName;
-        });
-
-        if (project && contributionIndex !== undefined) {
-            let contribution = project.contributions[contributionIndex];
-
-            // Use splice to remove the contribution
-            project.contributions.splice(contributionIndex, 1);
-            project.fundedAmount -= contribution;
-
-            calculateMatchAmounts();
-
-            $(this).closest('tr').find('.fundedAmount').text("$" + project.fundedAmount.toFixed(2));
-            updateUrl(); // Update URL after removing a contribution
-
-            $(this).closest('tr').find('.contributionTag').each(function(index) {
-                $(this).attr('data-contribution-index', index);
-            });
-            contributionTag.remove();
-        }
-
-
+        $(this)
+          .closest("tr")
+          .find(".contributionTag")
+          .each(function (index) {
+            $(this).attr("data-contribution-index", index);
+          });
+        contributionTag.remove();
+      }
     });
 
     function calculateMatchAmounts() {
-        const sqrtSums = quadraticFunding.projects.map(project => {
-            return project.contributions.reduce((sum, contrib) => sum + Math.sqrt(contrib), 0);
-        });
+      const sqrtSums = quadraticFunding.projects.map((project) => {
+        return project.contributions.reduce(
+          (sum, contrib) => sum + Math.sqrt(contrib),
+          0
+        );
+      });
 
-        const squares = sqrtSums.map(sum => sum * sum);
-        const total = squares.reduce((sum, sq) => sum + sq, 0);
-        const matches = squares.map(sq => (sq / total) * quadraticFunding.matchAmount);
+      const squares = sqrtSums.map((sum) => sum * sum);
+      const total = squares.reduce((sum, sq) => sum + sq, 0);
+      const matches = squares.map(
+        (sq) => (sq / total) * quadraticFunding.matchAmount
+      );
 
-        for (let i = 0; i < quadraticFunding.projects.length; i++) {
-            let matchAmount = matches[i];
+      for (let i = 0; i < quadraticFunding.projects.length; i++) {
+        let matchAmount = matches[i];
 
-            // Check if matchAmount is NaN. If true, set it to 0.
-            if (isNaN(matchAmount)) {
-                matchAmount = 0;
-            }
-
-            quadraticFunding.projects[i].matchAmount = matchAmount;
-
-            $('#projectTable')
-                .find(`tr[data-project-name='${quadraticFunding.projects[i].name}'] .matchAmount`)
-                .text("$" + matchAmount.toFixed(2));
+        // Check if matchAmount is NaN. If true, set it to 0.
+        if (isNaN(matchAmount)) {
+          matchAmount = 0;
         }
 
-        updateUrl(); // Update URL after recalculating match amounts
+        quadraticFunding.projects[i].matchAmount = matchAmount;
+
+        $("#projectTable")
+          .find(
+            `tr[data-project-name='${quadraticFunding.projects[i].name}'] .matchAmount`
+          )
+          .text("$" + matchAmount.toFixed(2));
+      }
+
+      updateUrl(); // Update URL after recalculating match amounts
     }
 
+    // Load parameters from URL if exist
+    function loadDefaults() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("match")) {
+        quadraticFunding.matchAmount = parseFloat(params.get("match"));
+      }
 
-    for (let project of quadraticFunding.projects) {
-        $('#newProject').val(project.name);
-        $('#addProject').click();
-        let projectRow = $('#projectTable').find(`tr[data-project-name='${project.name}']`);
+      let projectsToLoad = [];
+
+      if (params.has("grant")) {
+        let grants = params.getAll("grant");
+        if (grants.length > 0) {
+          for (let i = 0; i < grants.length; i++) {
+            let contributions = grants[i]
+              .split("-")
+              .map(parseFloat)
+              .filter((num) => !isNaN(num));
+            console.log(contributions);
+            projectsToLoad.push({
+              name: "Project " + (i + 1),
+              contributions: contributions,
+              fundedAmount: contributions.reduce((a, b) => a + b, 0),
+              matchAmount: 0,
+            });
+          }
+        }
+      }
+
+      for (let project of projectsToLoad) {
+        $("#addProject").click();
+        let projectRow = $("#projectTable").find(
+          `tr[data-project-name='${project.name}']`
+        );
 
         for (let contribution of project.contributions) {
-            projectRow.find('.contributionInput').val(contribution);
-            projectRow.find('.contributionInput').trigger(jQuery.Event('keypress', {
-                which: 13
-            }));
+          projectRow.find(".contributionInput").val(contribution);
+          projectRow.find(".contributionInput").trigger(
+            jQuery.Event("keypress", {
+              which: 13,
+            })
+          );
         }
+      }
+
+      // test if we have no grant in the url, add 4
+      if (!params.has("grant") && !params.has("match")) {
+        for (let i = 1; i <= 4; i++) {
+          $("#addProject").click();
+        }
+      }
     }
 
-    for (let i = 1; i <= 4; i++) {
-        $('#newProject').val('Project ' + i);
-        $('#addProject').click();
-    }
-
-});
+    // Call this function on page load to load the values from the URL
+    loadDefaults();
+  });
 </script>
-
