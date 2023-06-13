@@ -4,14 +4,50 @@
     <title>Quadratic Funding</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
+      body {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+      }
+      .matchingAmount,
+      .projectTable,
+      .addProjectCopyURL {
+        margin-bottom: 20px;
+      }
+      #projectTable {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #projectTable th,
+      #projectTable td {
+        border: 1px solid #ddd;
+        padding: 10px;
+      }
+      #projectTable th {
+        background-color: #f2f2f2;
+        text-align: left;
+      }
       .contributionTag {
         display: inline-block;
         background: #ccc;
         border: 1px solid #888;
-        margin-right: 5px;
+        margin: 5px;
+        padding: 5px;
+        border-radius: 5px;
       }
       .contributionTag button {
-        font-size: 3px;
+        font-size: 8px;
+        margin-left: 5px;
+      }
+      #addProject,
+      #copyURL {
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+      input {
+        padding: 5px;
+        font-size: 16px;
+        width: 95%;
       }
     </style>
   </head>
@@ -53,7 +89,10 @@
     let projectTable = $("<table>").attr("id", "projectTable");
 
     $("#calculation").append(
-      $("<div>").addClass("matchingAmount").append(matchAmountInput),
+      $("<div>")
+        .addClass("matchingAmount")
+        .append("<label>Matching Amount</label>")
+        .append(matchAmountInput),
       $("<div>").addClass("projectTable").append(projectTable),
       $("<div>")
         .addClass("addProjectCopyURL")
@@ -88,7 +127,7 @@
     });
 
     $("#addProject").on("click", function () {
-      let projectName = "Project " + (quadraticFunding.projects.length + 1);
+      let projectName = "Project #" + (quadraticFunding.projects.length + 1);
 
       if (projectName) {
         quadraticFunding.projects.push({
@@ -255,7 +294,7 @@
               .map(parseFloat)
               .filter((num) => !isNaN(num));
             projectsToLoad.push({
-              name: "Project " + (i + 1),
+              name: "Project #" + (i + 1),
               contributions: contributions,
               fundedAmount: contributions.reduce((a, b) => a + b, 0),
               matchAmount: 0,
