@@ -49,12 +49,16 @@
     let addProjectButton = $("<button>")
       .attr("id", "addProject")
       .text("Add Project");
+    let copyURLButton = $("<button>").attr("id", "copyURL").text("Copy URL");
     let projectTable = $("<table>").attr("id", "projectTable");
 
     $("#calculation").append(
-      $("<div>").append(matchAmountInput),
-      $("<div>").append(projectTable),
-      $("<div>").append(addProjectButton)
+      $("<div>").addClass("matchingAmount").append(matchAmountInput),
+      $("<div>").addClass("projectTable").append(projectTable),
+      $("<div>")
+        .addClass("addProjectCopyURL")
+        .append(addProjectButton)
+        .append(copyURLButton)
     );
 
     // Add listener to Match Amount input field
@@ -72,6 +76,16 @@
         $("<th>").text("Match Amount")
       )
     );
+
+    // Add copy URL functionality
+    $("#copyURL").on("click", function () {
+      let url = window.location.href;
+      let $temp = $("<input>");
+      $("body").append($temp);
+      $temp.val(url).select();
+      document.execCommand("copy");
+      $temp.remove();
+    });
 
     $("#addProject").on("click", function () {
       let projectName = "Project " + (quadraticFunding.projects.length + 1);
@@ -240,7 +254,6 @@
               .split("-")
               .map(parseFloat)
               .filter((num) => !isNaN(num));
-            console.log(contributions);
             projectsToLoad.push({
               name: "Project " + (i + 1),
               contributions: contributions,
