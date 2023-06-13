@@ -1,34 +1,47 @@
-## Quadratic Funding Calculator
+# Quadratic Funding Calculator
 
-The script implements a quadratic funding mechanism, a method of public funding that incentivizes community participation. Written in JavaScript and jQuery, it provides an interactive interface where users can add, edit, and remove projects and their respective contributions. 
+## Description
 
-### Key Components
+This is a simple web application that calculates quadratic funding matches for multiple projects. The application is implemented in JavaScript and utilizes jQuery for UI manipulation and event handling.
 
-1. **Initialization of Parameters**  
-   The script first initializes match amount and an array of projects, using values provided as URL parameters or defaults if parameters do not exist.
+Quadratic funding is a mechanism that optimizes the funding of public goods. It increases the impact of small contributions by calculating matching amounts using a quadratic formula. 
 
-   ```javascript
-   let quadraticFunding = {
-     matchAmount: params.get('matchAmount') ? parseFloat(params.get('matchAmount')) : 1000,
-     projects: params.get('projects') ? JSON.parse(params.get('projects')) : [],
-   };
-   ```
+## Features
 
-2. **Update URL Function**  
-   The `updateUrl()` function updates the URL to reflect the current state of the application.
+1. Enter a matching amount to be divided among the projects.
+2. Add and remove projects.
+3. Add and remove contributions to projects.
+4. Calculate match amounts based on entered contributions and display them in the table.
+5. Copy the current state of the calculator to the URL for sharing.
+6. Reload the calculator's state from the URL parameters.
 
-3. **HTML Elements Creation**  
-   The script dynamically creates necessary HTML elements, such as inputs for the match amount and new project names, a button to add a new project, and a table to display project details.
+## Usage
 
-4. **Event Handlers**  
-   Various events are set up to handle user interactions, such as typing in the match amount input, clicking the 'Add Project' or 'Remove Project' buttons, entering a contribution, and clicking the 'Remove Contribution' button.
+Open the HTML file in a web browser to start using the application. 
 
-5. **Quadratic Funding Calculation**  
-   The `calculateMatchAmounts()` function calculates the match amount for each project based on the quadratic funding formula: `(sum(sqrt(contribution))^2 / total) * matchAmount`.
+- To change the total matching amount, edit the "Matching Amount" input field.
+- To add a project, click the "Add Project" button.
+- To remove a project, click the remove button ("X") in the project row.
+- To add a contribution to a project, type the contribution amount in the project row's input field and press Enter.
+- To remove a contribution, click the remove button ("X") next to the contribution.
+- The "Funded Amount" column shows the sum of all contributions to the project.
+- The "Match Amount" column shows the calculated match for the project based on its contributions and the total matching amount.
+- To copy the current state of the calculator (matching amount, projects, and their contributions) to the URL for sharing, click the "Copy URL" button.
 
-6. **Initial Data Population**  
-   The script can pre-fill the application with data from the projects array, populating the project names, contributions, and recalculating the match amounts accordingly.
+## Requirements
 
-### Usage
+This application requires a web browser that supports JavaScript and the jQuery library. jQuery is included in the HTML file from a CDN.
 
-Simply run the script on your web page. It requires jQuery to operate. You can interact with the application by entering a match amount, adding projects, and specifying their contributions. The script will automatically calculate and display the match amounts for each project in real time.
+## Notes
+
+- This application uses the browser's history API to save and load its state from the URL. This feature might not work correctly if the file is opened as a local file (with a `file://` URL) in some browsers due to their security restrictions. To fully use this feature, serve the HTML file from a web server.
+- The application does not have any backend or persist the data. If you refresh the page or close the browser, all data will be lost unless saved in the URL.
+- The application does not perform any input validation. It's assumed that the users will enter positive numbers as the matching amount and contributions.
+
+## Contact
+
+Please feel free to contact the author if you have any questions or issues.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
