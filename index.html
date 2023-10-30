@@ -81,11 +81,17 @@
     let matchAmountInput = $("<input>")
       .attr("id", "matchAmount")
       .attr("placeholder", "Match Amount")
-      .attr("value", quadraticFunding.matchAmount);
+      .attr("value", quadraticFunding.matchAmount)
+      .attr("class", "matching-input");
+
     let addProjectButton = $("<button>")
       .attr("id", "addProject")
+      .attr("class", "button")
       .text("Add Project");
-    let copyURLButton = $("<button>").attr("id", "copyURL").text("Copy URL");
+    let copyURLButton = $("<button>")
+      .attr("id", "copyURL")
+      .attr("class", "button")
+      .text("Copy URL");
     let projectTable = $("<table>").attr("id", "projectTable");
 
     $("#calculation").append(
@@ -94,27 +100,27 @@
         .append("<label>Matching Amount</label>")
         .append(matchAmountInput),
       $("<div>").addClass("projectTable").append(projectTable),
-      $("<div>")
+      $("<div style='display: flex;'>")
         .addClass("addProjectCopyURL")
         .append(addProjectButton)
         .append(copyURLButton)
     );
 
-    // Add listener to Match Amount input field
-    $("#matchAmount").on("keyup", function () {
-      quadraticFunding.matchAmount = $(this).val();
-      calculateMatchAmounts();
-    });
-
     $("#projectTable").append(
       $("<tr>").append(
-        $("<th>").text("Remove"),
         $('<th colspan="2">').text("Project"),
         $("<th>").text("Contributions"),
         $("<th>").text("Funded Amount"),
-        $("<th>").text("Match Amount")
+        $("<th>").text("Match Amount"),
+        $("<th>").text("Remove")
       )
     );
+
+    matchAmountInput.on("input", function () {
+      quadraticFunding.matchAmount = parseFloat($(this).val());
+      calculateMatchAmounts();
+      updateUrl();
+    });
 
     // Add copy URL functionality
     $("#copyURL").on("click", function () {
@@ -140,9 +146,6 @@
         let projectRow = $("<tr>")
           .attr("data-project-name", projectName)
           .append(
-            $("<td>").append(
-              $("<button>").addClass("removeProject").text("\u2716")
-            ),
             $("<td>").text(projectName),
             $("<td>").append(
               $("<input>")
@@ -151,7 +154,10 @@
             ),
             $("<td>").attr("class", "contributions"),
             $("<td>").attr("class", "fundedAmount").text(0),
-            $("<td>").attr("class", "matchAmount").text(0)
+            $("<td>").attr("class", "matchAmount").text(0),
+            $("<td>").append(
+              $("<button>").addClass("removeProject").text("\u2716")
+            )
           );
 
         $("#projectTable").append(projectRow);
@@ -281,6 +287,7 @@
       const params = new URLSearchParams(window.location.search);
       if (params.has("match")) {
         quadraticFunding.matchAmount = parseFloat(params.get("match"));
+        matchAmountInput.val(quadraticFunding.matchAmount);
       }
 
       let projectsToLoad = [];

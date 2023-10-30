@@ -4,7 +4,7 @@
 
 This is a simple web application that calculates quadratic funding matches for multiple projects. The application is implemented in JavaScript and utilizes jQuery for UI manipulation and event handling.
 
-Quadratic funding is a mechanism that optimizes the funding of public goods. It increases the impact of small contributions by calculating matching amounts using a quadratic formula. 
+Quadratic funding is a mechanism that optimizes the funding of public goods. It increases the impact of small contributions by calculating matching amounts using a quadratic formula.
 
 ## Features
 
@@ -17,7 +17,7 @@ Quadratic funding is a mechanism that optimizes the funding of public goods. It 
 
 ## Usage
 
-Open the HTML file in a web browser to start using the application. 
+Open the HTML file in a web browser to start using the application.
 
 - To change the total matching amount, edit the "Matching Amount" input field.
 - To add a project, click the "Add Project" button.
